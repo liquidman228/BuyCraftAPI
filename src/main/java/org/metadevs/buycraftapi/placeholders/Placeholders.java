@@ -27,11 +27,11 @@ public class Placeholders {
     public String onPlaceholderRequest(Player p, @NotNull String identifier) {
 
         if (identifier.equalsIgnoreCase("value_from_name")) {
-            if (p == null) return "Player is Offline";
+            if (p == null)
+                return "Player is Offline";
             String value = query.getPlayerTotal(p.getName());
             return value != null ? value : "0";
         }
-
 
         if (identifier.contains("vault_recent_name_")) {
             int num;
@@ -40,19 +40,18 @@ public class Placeholders {
             } catch (NumberFormatException e) {
                 return "Invalid payment number. Put a number from 0 to " + (maxPayments - 1);
             }
-            if (maxPayments == 0) return "Payments could not be found";
+            if (maxPayments == 0)
+                return "Payments could not be found";
 
             if (num > maxPayments - 1 || num < 0)
                 return "Invalid payment number. Put a number from 0 to " + (maxPayments - 1);
 
-
-            if(Bukkit.isPrimaryThread()){
+            if (Bukkit.isPrimaryThread()) {
                 return "This placeholder is not supported on the main thread";
             }
 
-
             OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(query.getRecentPayment(num).getUuid());
-            return buyCraftAPI.getPerms().getPrimaryGroup(null, offlinePlayer);
+            return buyCraftAPI.getGroup(offlinePlayer);
         }
 
         if (identifier.contains("recent_name_")) {
@@ -63,40 +62,43 @@ public class Placeholders {
                 return "Invalid payment number. Put a number from 0 to " + (maxPayments - 1);
             }
 
-            if (maxPayments == 0) return "Payments could not be found";
+            if (maxPayments == 0)
+                return "Payments could not be found";
 
             if (num > maxPayments - 1 || num < 0)
                 return "0";
-                //return "Invalid payment number. Put a number from 0 to " + (maxPayments - 1);
-
+            // return "Invalid payment number. Put a number from 0 to " + (maxPayments - 1);
 
             return query.getRecentPayment(num).getName();
         }
 
-
         if (identifier.contains("recent_currency_")) {
             String replace = identifier.replace("recent_currency_", "");
-            if (query.isNotNumeric(replace)) return "Invalid number";
+            if (query.isNotNumeric(replace))
+                return "Invalid number";
             int num = Integer.parseInt(replace);
 
-            if (maxPayments == 0) return "Payments could not be found";
+            if (maxPayments == 0)
+                return "Payments could not be found";
             if (num > maxPayments - 1 || num < 0)
                 return "0";
-                //return "Error, Invalid number! You can put a number from 0 to " + (maxPayments - 1);
-
+            // return "Error, Invalid number! You can put a number from 0 to " +
+            // (maxPayments - 1);
 
             return query.getRecentPayment(num).getCurrency();
         }
 
-
         if (identifier.contains("recent_amount_")) {
             String replace = identifier.replace("recent_amount_", "");
-            if (query.isNotNumeric(replace)) return "Invalid number";
+            if (query.isNotNumeric(replace))
+                return "Invalid number";
             int num = Integer.parseInt(replace);
-            if (maxPayments == 0) return "Payments could not be found";
+            if (maxPayments == 0)
+                return "Payments could not be found";
             if (num > maxPayments - 1 || num < 0)
                 return "0";
-                //return "Error, Invalid number! You can put a number from 0 to " + (maxPayments - 1);
+            // return "Error, Invalid number! You can put a number from 0 to " +
+            // (maxPayments - 1);
 
             return String.valueOf(Query.round(query.getRecentPayment(num).getAmount(), 2));
         }
@@ -118,10 +120,12 @@ public class Placeholders {
 
         if (identifier.contains("top_donor_global_name_")) {
             String replace = identifier.replace("top_donor_global_name_", "");
-            if (query.isNotNumeric(replace)) return "Error, Invalid number";
+            if (query.isNotNumeric(replace))
+                return "Error, Invalid number";
             int num = Integer.parseInt(replace);
             TopValue payment = query.getTop(GLOBAL, num);
-            if (payment == null) return "";
+            if (payment == null)
+                return "";
             else {
                 return payment.getName();
             }
@@ -129,10 +133,12 @@ public class Placeholders {
 
         if (identifier.contains("top_donor_monthly_name_")) {
             String replace = identifier.replace("top_donor_monthly_name_", "");
-            if (query.isNotNumeric(replace)) return "Error, Invalid number";
+            if (query.isNotNumeric(replace))
+                return "Error, Invalid number";
             int num = Integer.parseInt(replace);
             TopValue payment = query.getTop(MONTHLY, num);
-            if (payment == null) return "0";
+            if (payment == null)
+                return "0";
             else {
                 return payment.getName();
 
@@ -141,10 +147,12 @@ public class Placeholders {
 
         if (identifier.contains("top_donor_current_month_name_")) {
             String replace = identifier.replace("top_donor_current_month_name_", "");
-            if (query.isNotNumeric(replace)) return "Error, Invalid number";
+            if (query.isNotNumeric(replace))
+                return "Error, Invalid number";
             int num = Integer.parseInt(replace);
             TopValue payment = query.getTop(CURRENT_MONTH, num);
-            if (payment == null) return "0";
+            if (payment == null)
+                return "0";
             else {
                 return payment.getName();
             }
@@ -165,21 +173,22 @@ public class Placeholders {
             return getPrice(replace, CURRENT_MONTH);
         }
 
-        if(identifier.equalsIgnoreCase("top_donor_global_name")){
+        if (identifier.equalsIgnoreCase("top_donor_global_name")) {
             return query.getTopDonorName(GLOBAL);
         }
 
-        if(identifier.equalsIgnoreCase("top_donor_monthly_name")){
+        if (identifier.equalsIgnoreCase("top_donor_monthly_name")) {
             return query.getTopDonorName(MONTHLY);
         }
 
-        if(identifier.equalsIgnoreCase("top_donor_current_month_name")){
+        if (identifier.equalsIgnoreCase("top_donor_current_month_name")) {
             return query.getTopDonorName(CURRENT_MONTH);
         }
 
         if (identifier.equalsIgnoreCase("total_earnings_global")) {
             double data = query.getAllMoneySpent(GLOBAL);
-            if (data == -1) return "Error";
+            if (data == -1)
+                return "Error";
             else {
                 return String.format("%.2f", data);
             }
@@ -187,7 +196,8 @@ public class Placeholders {
 
         if (identifier.equalsIgnoreCase("total_earnings_monthly")) {
             double data = query.getAllMoneySpent(MONTHLY);
-            if (data == -1) return "Error";
+            if (data == -1)
+                return "Error";
             else {
                 return String.format("%.2f", data);
             }
@@ -195,19 +205,18 @@ public class Placeholders {
 
         if (identifier.equalsIgnoreCase("total_earnings_current_month")) {
             double data = query.getAllMoneySpent(CURRENT_MONTH);
-            if (data == -1) return "Error";
+            if (data == -1)
+                return "Error";
             else {
                 return String.format("%.2f", data);
             }
         }
 
-
         if (identifier.equalsIgnoreCase("info")) {
             return query.getPayments().size() + " payments";
         }
 
-
-        if (identifier.equalsIgnoreCase("all")) { //only for test
+        if (identifier.equalsIgnoreCase("all")) { // only for test
             StringBuilder sb = new StringBuilder();
             for (Payment s : query.getPayments()) {
                 sb.append(s.getName()).append(" ").append(s.getAmount()).append("\n");
@@ -215,31 +224,34 @@ public class Placeholders {
             return sb.toString();
         }
 
-
         return null;
     }
 
     private String getVaultTop(String replace, Type currentMonth) {
-        if (query.isNotNumeric(replace)) return "Error, Invalid number";
+        if (query.isNotNumeric(replace))
+            return "Error, Invalid number";
         int num = Integer.parseInt(replace);
 
-        if(Bukkit.isPrimaryThread()){
+        if (Bukkit.isPrimaryThread()) {
             return "This placeholder is not supported on the main thread";
         }
 
         TopValue payment = query.getTop(currentMonth, num);
-        if (payment == null) return "0";
+        if (payment == null)
+            return "0";
         else {
             OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(payment.getUuid());
-            return buyCraftAPI.getPerms().getPrimaryGroup(null, offlinePlayer);
+            return buyCraftAPI.getGroup(offlinePlayer);
         }
     }
 
     private String getPrice(String replace, Type monthly) {
-        if (query.isNotNumeric(replace)) return "Error, Invalid number";
+        if (query.isNotNumeric(replace))
+            return "Error, Invalid number";
         int num = Integer.parseInt(replace);
         TopValue payment = query.getTop(monthly, num);
-        if (payment == null) return "Error";
+        if (payment == null)
+            return "Error";
         else {
             return String.format("%.2f", payment.getAmount());
         }
