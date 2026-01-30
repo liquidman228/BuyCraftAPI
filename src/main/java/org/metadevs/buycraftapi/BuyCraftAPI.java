@@ -6,8 +6,8 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.clip.placeholderapi.expansion.Taskable;
 import me.clip.placeholderapi.metrics.bukkit.Metrics;
 import me.clip.placeholderapi.metrics.charts.MultiLineChart;
-import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.jetbrains.annotations.NotNull;
@@ -18,6 +18,8 @@ import org.metadevs.buycraftapi.placeholders.Placeholders;
 import org.metadevs.buycraftapi.providers.BuyCraftXProvider;
 import org.metadevs.buycraftapi.providers.Provider;
 import org.metadevs.buycraftapi.providers.TebexProvider;
+import org.metadevs.buycraftapi.providers.IVaultProvider;
+import org.metadevs.buycraftapi.providers.VaultSupport;
 import org.metadevs.buycraftapi.tasks.Tasks;
 
 import java.util.HashMap;
@@ -25,11 +27,10 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 @Getter
 public class BuyCraftAPI extends PlaceholderExpansion implements Taskable, Configurable {
 
-    private Permission perms = null;
+    private IVaultProvider vaultSupport;
     private Request request;
     private Placeholders placeholdersManager;
     private Query query;
@@ -45,15 +46,26 @@ public class BuyCraftAPI extends PlaceholderExpansion implements Taskable, Confi
             getLogger().log(Level.INFO, "Tebex found! Using it...");
             return new TebexProvider();
         } else {
-            throw new IllegalStateException("No supported plugin found");
+            return null;
         }
     }
-
 
     @Override
     public boolean canRegister() {
         logger = Logger.getLogger("BuycraftAPI");
-        provider = getProvider();
+
+        try {
+            provider = getProvider();
+        } catch (Throwable e) {
+            logger.severe("Failed to initialize provider: " + e.getMessage());
+            return false;
+        }
+
+        if (provider == null) {
+            logger.severe("Plugin Tebex or BuycraftX not found! This expansion requires one of them to work.");
+            return false;
+        }
+
         configManager = new ConfigManager(this);
 
         final String key = provider.getKey();
@@ -66,16 +78,13 @@ public class BuyCraftAPI extends PlaceholderExpansion implements Taskable, Confi
         return true;
     }
 
-    public @NotNull
-    String getAuthor() {
+    public @NotNull String getAuthor() {
         return "AlexDev_";
     }
-
 
     public @NotNull String getIdentifier() {
         return "buycraftapi";
     }
-
 
     public @NotNull String getVersion() {
         try {
@@ -91,32 +100,18 @@ public class BuyCraftAPI extends PlaceholderExpansion implements Taskable, Confi
         return placeholdersManager.onPlaceholderRequest(p, identifier);
     }
 
-
-    private void vaultHook() {
-        if (Bukkit.getPluginManager().isPluginEnabled("Vault")) {
-            if (setupPermissions()) {
-                getLogger().log(Level.INFO, "Successfully hooked into Vault for BuyCraftAPI v" + getVersion());
-            }
+    public String getGroup(OfflinePlayer player) {
+        if (vaultSupport != null && vaultSupport.isHooked()) {
+            return vaultSupport.getPrimaryGroup(player);
         }
-    }
-
-
-    private boolean setupPermissions() {
-        try {
-            RegisteredServiceProvider<Permission> rsp = Bukkit.getServer().getServicesManager().getRegistration(Permission.class);
-            if (rsp == null) return false;
-            perms = rsp.getProvider();
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+        return "No Vault";
     }
 
     @Override
     public void start() {
         request = new Request(provider.getKey(), this);
         query = new Query(this);
-        
+
         new Tasks(this, getPlaceholderAPI());
 
         int pluginId = 10173;
@@ -129,8 +124,13 @@ public class BuyCraftAPI extends PlaceholderExpansion implements Taskable, Confi
             return valueMap;
         }));
 
-        vaultHook();
+        if (Bukkit.getPluginManager().isPluginEnabled("Vault")) {
+            vaultSupport = new VaultSupport(logger);
+            vaultSupport.setupPermissions();
+        }
+
         placeholdersManager = new Placeholders(this);
+
     }
 
     @Override
