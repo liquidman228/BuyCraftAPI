@@ -1,7 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id "com.github.johnrengelman.shadow" version "8.1.1"
+    id "io.github.goooler.shadow" version "8.1.8"
 }
 
 repositories {
@@ -73,7 +73,11 @@ build.dependsOn(shadowJar)
 
 group = 'org.metadevs.buycraftapi'
 description = 'BuyCraftAPI'
-java.sourceCompatibility = JavaVersion.VERSION_17
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
 
 publishing {
     publications {
